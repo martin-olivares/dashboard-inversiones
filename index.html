@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Inversiones » Neobrutalist</title>
+    <title>Dashboard Financiero Pro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -12,97 +12,101 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --background: #f4f4f4;
-            --surface: #ffffff;
-            --primary: #fde047; /* Amarillo Vibrante */
-            --primary-dark: #facc15;
-            --text-primary: #1c1c1c;
-            --border-color: #1c1c1c;
+            --background: #0d1117; /* GitHub Dark Dimmed */
+            --surface-1: #161b22;
+            --surface-2: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #7d8590;
+            --accent: #58a6ff;
         }
         body { 
-            font-family: 'Figtree', sans-serif; 
+            font-family: 'Be Vietnam Pro', sans-serif; 
             background-color: var(--background); 
             color: var(--text-primary);
         }
         [v-cloak] { display: none; }
-        .chart-container { position: relative; height: 100%; min-height: 400px; }
-        .hard-shadow { box-shadow: 4px 4px 0px 0px var(--border-color); }
-        .hard-shadow-sm { box-shadow: 2px 2px 0px 0px var(--border-color); }
-        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+        .chart-container { position: relative; height: 400px; }
+
+        /* Efecto de borde gradiente */
+        .gradient-border {
+            border: 1px solid transparent;
+            background: linear-gradient(var(--surface-1), var(--surface-1)) padding-box, linear-gradient(to right, #30363d, #505a66) border-box;
+        }
+
+        /* Estilo para el loader */
+        .loader {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: inline-block;
+            border-top: 3px solid var(--accent);
+            border-right: 3px solid transparent;
+            box-sizing: border-box;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body class="antialiased">
-    <div id="app" v-cloak class="max-w-screen-2xl mx-auto p-4 md:p-6 lg:p-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <aside class="lg:col-span-3">
-                <div class="p-6 bg-white border-2 border-black rounded-xl hard-shadow sticky top-8">
-                    <div class="flex items-center space-x-3 mb-8">
-                        <div class="bg-yellow-300 p-2 border-2 border-black rounded-md">
-                            <svg class="h-6 w-6 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                        </div>
-                        <h1 class="text-2xl font-extrabold">StockDash</h1>
-                    </div>
-                    <div class="space-y-4">
-                        <h2 class="font-bold text-lg">Añadir Activo</h2>
-                        <input type="text" v-model="newStockTicker" @keyup.enter="addStock" placeholder="Ticker, ej: AAPL" class="w-full px-4 py-2 bg-white border-2 border-black rounded-md focus:ring-2 focus:ring-yellow-400 focus:border-black transition">
-                        <button @click="addStock" :disabled="isLoading" class="w-full bg-yellow-300 text-black font-bold px-5 py-2 rounded-md border-2 border-black transition-all duration-200 hover:bg-yellow-400 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hard-shadow-sm disabled:bg-gray-300 disabled:cursor-not-allowed">
+    <div id="app" v-cloak class="max-w-screen-xl mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold tracking-tight text-white">Dashboard Financiero</h1>
+            <p class="text-text-secondary">Análisis de activos con IA integrada</p>
+        </header>
+
+        <main class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 p-5 bg-surface-1 rounded-lg gradient-border">
+                    <h2 class="font-semibold mb-3 text-white">Control de Activos</h2>
+                    <div class="space-y-3">
+                        <input type="text" v-model="newStockTicker" @keyup.enter="addStock" placeholder="Añadir ticker, ej: AAPL" class="w-full px-3 py-2 bg-background border border-border-color rounded-md focus:ring-2 focus:ring-accent focus:border-accent transition placeholder:text-text-secondary">
+                        <button @click="addStock" :disabled="isLoading" class="w-full bg-accent text-white font-bold px-4 py-2 rounded-md transition-opacity hover:opacity-90 disabled:bg-gray-500 disabled:cursor-not-allowed">
                             <span v-if="!isLoading">Agregar</span>
                             <span v-if="isLoading">Cargando...</span>
                         </button>
-                         <p v-if="error" class="text-red-600 text-sm mt-2 animate-fade-in">{{ error }}</p>
+                         <p v-if="error" class="text-red-400 text-xs text-center pt-1">{{ error }}</p>
                     </div>
                 </div>
-            </aside>
-
-            <main class="lg:col-span-9">
-                <div v-if="isLoadingInitial" class="flex justify-center items-center h-96">
-                    <div class="w-12 h-12 border-4 border-black border-dashed rounded-full animate-spin"></div>
+                <div v-if="!isLoadingInitial && trackedStocks.length > 0" class="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <kpi-card v-for="ticker in trackedStocks.slice(0, 4)" :key="ticker" :stock="stockData[ticker]" :is-active="activeDetailStock === ticker" @select="setActiveDetail" @remove="removeStock"></kpi-card>
                 </div>
-                
-                <div v-else class="space-y-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                        <kpi-card v-for="ticker in trackedStocks" :key="ticker" :stock="stockData[ticker]" :is-active="activeDetailStock === ticker" @select="setActiveDetail" @remove="removeStock"></kpi-card>
-                    </div>
-                    
-                    <template v-if="trackedStocks.length > 0">
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div class="lg:col-span-2 p-6 bg-white border-2 border-black rounded-xl hard-shadow">
-                                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
-                                    <h3 class="font-bold text-lg">Histórico y Proyección</h3>
-                                    <div class="flex flex-wrap justify-center gap-1.5">
-                                        <button v-for="ticker in trackedStocks" @click="toggleStockInChart(ticker)" :class="[selectedStocksInChart.includes(ticker) ? 'bg-black text-white' : 'bg-gray-200 text-black hover:bg-gray-300', 'px-3 py-1 text-xs font-bold rounded-md transition']">
-                                            {{ ticker }}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="priceChart"></canvas>
-                                </div>
-                            </div>
-
-                            <div class="p-6 bg-white border-2 border-black rounded-xl hard-shadow">
-                                <detail-view v-if="activeDetailStock" :stock="stockData[activeDetailStock]" @analyze="analyzeWithGemini"></detail-view>
-                                <div v-else class="flex flex-col items-center justify-center h-full text-center">
-                                    <p class="font-bold text-lg">Análisis Detallado</p>
-                                    <p class="text-gray-500 text-sm">Selecciona una tarjeta para ver sus detalles y análisis con IA.</p>
-                                </div>
-                            </div>
+                <div v-if="isLoadingInitial" class="md:col-span-2 flex items-center justify-center bg-surface-1 rounded-lg gradient-border">
+                    <div class="loader"></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 p-5 bg-surface-1 rounded-lg gradient-border">
+                     <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                        <h3 class="font-semibold text-white">Rendimiento Histórico y Proyectado</h3>
+                        <div class="flex flex-wrap justify-center gap-1.5">
+                            <button v-for="ticker in trackedStocks" @click="toggleStockInChart(ticker)" :class="[selectedStocksInChart.includes(ticker) ? 'bg-accent text-white' : 'bg-surface-2 text-text-secondary hover:bg-border-color', 'px-3 py-1 text-xs font-bold rounded-full transition']">
+                                {{ ticker }}
+                            </button>
                         </div>
-                    </template>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="priceChart"></canvas>
+                    </div>
                 </div>
-            </main>
-        </div>
+
+                <div class="p-5 bg-surface-1 rounded-lg gradient-border">
+                    <detail-view v-if="activeDetailStock" :stock="stockData[activeDetailStock]" @analyze="analyzeWithGemini"></detail-view>
+                    <div v-else class="flex flex-col items-center justify-center h-full text-center">
+                        <p class="font-semibold text-white">Análisis Detallado</p>
+                        <p class="text-text-secondary text-sm">Selecciona un activo para ver sus detalles y análisis con IA.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
@@ -111,16 +115,13 @@
         const kpiCard = {
             props: ['stock', 'isActive'],
             template: `
-                <div @click="$emit('select', stock.ticker)" 
-                    :class="[isActive ? 'bg-yellow-300' : 'bg-white', 'p-4 rounded-lg border-2 border-black cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#1c1c1c]']">
-                    <div class="flex items-center justify-between">
-                        <h4 class="font-extrabold text-xl">{{ stock.ticker }}</h4>
-                        <button @click.stop="$emit('remove', stock.ticker)" class="text-gray-400 hover:text-red-500 font-bold">&times;</button>
-                    </div>
-                    <p class="text-3xl font-bold my-2">$ {{ stock.lastPrice.toFixed(2) }}</p>
-                    <div class="text-sm font-semibold" :class="stock.isPositive ? 'text-green-600' : 'text-red-500'">
-                        {{ stock.isPositive ? '+' : '' }}{{ stock.six_month_return.toFixed(2) }}% (6m)
-                    </div>
+                <div @click="$emit('select', stock.ticker)" :class="[isActive ? 'bg-accent/10 border-accent' : 'border-transparent', 'relative p-4 bg-surface-1 rounded-lg border-2 cursor-pointer transition-colors duration-300 gradient-border']">
+                    <button @click.stop="$emit('remove', stock.ticker)" class="absolute top-2 right-2 text-text-secondary hover:text-red-400 text-lg font-bold">&times;</button>
+                    <p class="text-xs text-text-secondary">{{ stock.ticker }}</p>
+                    <p class="text-2xl font-bold text-white my-1">$ {{ stock.lastPrice.toFixed(2) }}</p>
+                    <p class="text-sm font-semibold" :class="stock.isPositive ? 'text-green-400' : 'text-red-400'">
+                        {{ stock.isPositive ? '+' : '' }}{{ stock.six_month_return.toFixed(2) }}%
+                    </p>
                 </div>`
         };
 
@@ -133,34 +134,29 @@
                     this.isAnalyzing = true; this.error = null; this.analysis = null;
                     const result = await this.$emit('analyze', this.stock.ticker, this.stock.name);
                     if (result) {
-                        this.analysis = marked.parse(result);
-                    } else {
-                        this.error = "No se pudo obtener el análisis.";
-                    }
+                        this.analysis = marked.parse(result.replace(/#/g, ' '));
+                    } else { this.error = "No se pudo obtener el análisis."; }
                     this.isAnalyzing = false;
                 }
             },
             template: `
-                <div class="animate-fade-in flex flex-col h-full">
-                    <div>
-                        <h3 class="font-extrabold text-2xl mb-1">{{ stock.name }}</h3>
-                        <p class="text-sm text-gray-500 mb-4">{{ stock.description.substring(0, 100) }}...</p>
+                <div class="flex flex-col h-full">
+                    <div class="mb-3">
+                        <h3 class="font-bold text-lg text-white">{{ stock.name }}</h3>
+                        <p class="text-sm text-text-secondary">{{ stock.financials['Market Cap'] }}</p>
                     </div>
                     
-                    <div class="bg-gray-100 p-3 rounded-md border-2 border-black mb-4">
-                        <h4 class="font-bold text-sm mb-2">Métricas Clave</h4>
-                        <ul class="space-y-1 text-xs">
-                            <li class="flex justify-between"><span>Ratio P/E:</span> <span class="font-bold">{{ stock.financials['P/E'] }}</span></li>
-                            <li class="flex justify-between"><span>Capitalización:</span> <span class="font-bold">{{ stock.financials['Market Cap'] }}</span></li>
-                        </ul>
-                    </div>
+                    <button @click="performAnalysis" :disabled="isAnalyzing" class="w-full bg-accent text-white font-bold px-4 py-2 rounded-md transition hover:opacity-90 disabled:bg-gray-500 text-sm mb-3">
+                        <span v-if="!isAnalyzing">Análisis con IA</span>
+                        <span v-if="isAnalyzing">Generando...</span>
+                    </button>
 
-                    <div class="flex-grow space-y-2">
-                        <button @click="performAnalysis" :disabled="isAnalyzing" class="w-full bg-black text-white font-bold px-4 py-2 rounded-md border-2 border-black transition hover:bg-gray-800 disabled:bg-gray-400 text-sm">
-                            <span v-if="!isAnalyzing">Analizar con Gemini</span>
-                            <span v-if="isAnalyzing">Analizando...</span>
-                        </button>
-                        <div v-if="analysis" class="prose prose-sm p-3 bg-gray-100 border-2 border-black rounded-md overflow-y-auto max-h-48" v-html="analysis"></div>
+                    <div class="flex-grow space-y-2 overflow-y-auto" style="max-height: 280px;">
+                        <div v-if="isAnalyzing" class="text-center p-4"><div class="loader inline-block"></div></div>
+                        <div v-if="analysis" class="prose prose-sm prose-invert text-text-secondary" v-html="analysis"></div>
+                        <p v-if="!analysis && !isAnalyzing" class="text-text-secondary text-sm">
+                            {{ stock.description.substring(0, 250) }}...
+                        </p>
                     </div>
                 </div>`
         };
@@ -168,7 +164,6 @@
         createApp({
             components: { kpiCard, detailView },
             setup() {
-                // --- La lógica de Vue (estado, métodos, etc.) permanece idéntica a la versión anterior ---
                 const stockData = reactive({});
                 const trackedStocks = ref([]);
                 const selectedStocksInChart = ref([]);
@@ -179,42 +174,35 @@
                 const error = ref(null);
                 let chartInstance = null;
                 
+                // Pega aquí la URL de tu función de Netlify
                 const API_ENDPOINT = 'https://cerulean-cupcake-1f5893.netlify.app/.netlify/functions/fetch-stock';
 
-                const loadStocksFromStorage = () => {
-                    const stored = localStorage.getItem('trackedStocks');
-                    return stored ? JSON.parse(stored) : ['TSLA', 'AMZN', 'MELI', 'GOOGL'];
-                };
-                const saveStocksToStorage = () => localStorage.setItem('trackedStocks', JSON.stringify(trackedStocks.value));
-
-                const analyzeWithGemini = async (ticker, stockName) => {
-                    try {
-                        const response = await fetch(`${API_ENDPOINT}?ticker=${ticker}&action=analyze&stockName=${encodeURIComponent(stockName)}`);
-                        if (!response.ok) throw new Error('Network response was not ok.');
-                        const data = await response.json();
-                        return data.analysis;
-                    } catch (err) {
-                        console.error("Error calling analysis function:", err);
-                        return null;
-                    }
-                };
-                
-                const fetchStockData = async (ticker) => { /* ...código idéntico... */ };
-                const adaptApiData = (priceData, overviewData, ticker) => { /* ...código idéntico... */ };
-                const addStock = async () => { /* ...código idéntico... */ };
-                const removeStock = (tickerToRemove) => { /* ...código idéntico... */ };
+                // --- La lógica de Vue (acortada por brevedad, es la misma) ---
+                const loadStocksFromStorage=()=>localStorage.getItem('trackedStocks')?JSON.parse(localStorage.getItem('trackedStocks')):['TSLA','AMZN','MELI','GOOGL'];
+                const saveStocksToStorage=()=>localStorage.setItem('trackedStocks',JSON.stringify(trackedStocks.value));
+                const analyzeWithGemini=async(ticker,stockName)=>{try{const r=await fetch(`${API_ENDPOINT}?ticker=${ticker}&action=analyze&stockName=${encodeURIComponent(stockName)}`);if(!r.ok)throw new Error('Network error');const d=await r.json();return d.analysis}catch(e){console.error("Error:",e);return null}};
+                const fetchStockData=async(ticker)=>{error.value=null;if(!API_ENDPOINT||API_ENDPOINT.includes('tu-sitio')){error.value="Configura API URL.";return null}try{const r=await fetch(`${API_ENDPOINT}?ticker=${ticker}`);if(!r.ok)throw new Error('Network error');const{priceData:p,overviewData:o}=await r.json();if(p.Note||o.Note)throw new Error('API limit reached');if(p['Error Message']||!o.Symbol)throw new Error(`Invalid data for ${ticker}`);return adaptApiData(p,o,ticker)}catch(e){console.error(`Error for ${ticker}:`,e);error.value=e.message||`Could not fetch data for ${ticker}`;return null}};
+                const adaptApiData=(p,o,t)=>{const s=p['Monthly Adjusted Time Series'],d=Object.keys(s).sort((a,b)=>new Date(a)-new Date(b)).slice(-12),pr=d.map(dt=>parseFloat(s[dt]['4. close'])),lp=pr[pr.length-1],sap=pr.length>6?pr[pr.length-7]:pr[0],sr=((lp-sap)/sap)*100;let tr=(lp-pr[pr.length-4])/3,pj=[],pp=lp;for(let i=0;i<6;i++){pp+=tr+((Math.random()-.45)*(lp*.05));pj.push(pp)}return{ticker:t,name:o.Name,description:o.Description,financials:{'P/E':parseFloat(o.PERatio),'Market Cap':(parseFloat(o.MarketCapitalization)/1e9).toFixed(2)+'B USD','EPS':parseFloat(o.EPS)},prices:pr,lastPrice:lp,six_month_return:sr,isPositive:sr>=0,projection:pj,projected_price:pj[5]||lp,projected_return:((pj[5]||lp)-lp)/lp*100,color:`rgba(${Math.floor(Math.random()*155)+100},${Math.floor(Math.random()*155)+100},${Math.floor(Math.random()*155)+100},1)`}};
+                const addStock=async()=>{const t=newStockTicker.value.toUpperCase().trim();if(!t||trackedStocks.value.includes(t))return;isLoading.value=!0;const n=await fetchStockData(t);isLoading.value=!1;if(n){stockData[t]=n;trackedStocks.value.push(t);selectedStocksInChart.value.push(t);newStockTicker.value='';saveStocksToStorage()}};
+                const removeStock=t=>{trackedStocks.value=trackedStocks.value.filter(i=>i!==t);selectedStocksInChart.value=selectedStocksInChart.value.filter(i=>i!==t);if(activeDetailStock.value===t)activeDetailStock.value=null;delete stockData[t];saveStocksToStorage()};
                 
                 const initializeChart = () => {
                     const ctx = document.getElementById('priceChart').getContext('2d');
-                    Chart.defaults.font.family = "'Figtree', sans-serif";
+                    const createGlowGradient = (color) => {
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                        gradient.addColorStop(0, color.replace('1)', '0.5)'));
+                        gradient.addColorStop(0.5, color.replace('1)', '0.05)'));
+                        gradient.addColorStop(1, color.replace('1)', '0)'));
+                        return gradient;
+                    };
                     chartInstance = new Chart(ctx, {
                         type: 'line',
                         options: { 
                             responsive: true, maintainAspectRatio: false,
                             plugins: { legend: { display: false } },
                             scales: { 
-                                x: { grid: { display: false }, border: { color: 'black', width: 2 } }, 
-                                y: { grid: { display: false }, border: { color: 'black', width: 2 } } 
+                                x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: var(--text-secondary) } }, 
+                                y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: var(--text-secondary), callback: (v) => '$' + v } }
                             }
                         }
                     });
@@ -222,25 +210,40 @@
                 
                 const updateChart = () => {
                     if (!chartInstance) return;
-                    const labels_hist = Array.from({length: 12}, (_, i) => `M${i-11}`);
-                    const labels_proj = Array.from({length: 6}, (_, i) => `P${i+1}`);
-                    chartInstance.data.labels = [...labels_hist, ...labels_proj];
+                    const labels = Array.from({length: 18}, (_, i) => i < 12 ? `M${i-11}`: `P${i-11}`);
+                    chartInstance.data.labels = labels;
                     chartInstance.data.datasets = [];
+                    const createGlowGradient = (color) => {
+                        const gradient = chartInstance.ctx.createLinearGradient(0, 0, 0, 400);
+                        gradient.addColorStop(0, color.replace('1)', '0.6)'));
+                        gradient.addColorStop(0.8, color.replace('1)', '0)'));
+                        return gradient;
+                    };
                     selectedStocksInChart.value.forEach(ticker => {
                         const stock = stockData[ticker];
                         if (!stock) return;
+                        
                         chartInstance.data.datasets.push({
-                            label: `${ticker} Hist.`, data: stock.prices, borderColor: stock.color, tension: 0.3, borderWidth: 3, pointRadius: 0
+                            label: `${ticker} Hist.`, data: stock.prices, borderColor: stock.color,
+                            tension: 0.4, borderWidth: 2, pointRadius: 0, fill: true,
+                            backgroundColor: createGlowGradient(stock.color)
                         });
                         const projectionData = Array(11).fill(null).concat([stock.lastPrice], stock.projection);
                         chartInstance.data.datasets.push({
-                            label: `${ticker} Proy.`, data: projectionData, borderColor: stock.color, borderDash: [3, 3], tension: 0.3, borderWidth: 2.5, pointRadius: 0
+                            label: `${ticker} Proy.`, data: projectionData, borderColor: stock.color,
+                            borderDash: [3, 3], tension: 0.4, borderWidth: 2, pointRadius: 0
                         });
                     });
                     chartInstance.update();
                 };
 
-                onMounted(async () => { /* ...código idéntico... */ });
+                onMounted(async () => {
+                    const initialStocks = loadStocksFromStorage();
+                    const results = await Promise.all(initialStocks.map(ticker => fetchStockData(ticker)));
+                    results.forEach((data,index)=>{if(data){const ticker=initialStocks[index];stockData[ticker]=data;trackedStocks.value.push(ticker);selectedStocksInChart.value.push(ticker);}});
+                    isLoadingInitial.value=false;
+                    setTimeout(()=>{if(trackedStocks.value.length>0){initializeChart();updateChart();}},0);
+                });
                 watch([selectedStocksInChart, trackedStocks], updateChart, { deep: true });
 
                 return {
@@ -253,58 +256,6 @@
                         else selectedStocksInChart.value.push(ticker);
                     }
                 };
-                 
-                // --- Bloques de código idénticos (acortados por brevedad) ---
-                function fetchStockData(ticker) {
-                    return new Promise(async (resolve) => {
-                        error.value = null;
-                        if (!API_ENDPOINT || API_ENDPOINT.includes('tu-sitio')) { error.value = "Configura la URL de la API."; return resolve(null); }
-                        try {
-                            const response = await fetch(`${API_ENDPOINT}?ticker=${ticker}`);
-                            if (!response.ok) throw new Error('La respuesta de la red no fue exitosa.');
-                            const { priceData, overviewData } = await response.json();
-                            if (priceData['Note'] || overviewData['Note']) throw new Error('Límite de la API alcanzado.');
-                            if (priceData['Error Message'] || !overviewData.Symbol) throw new Error(`Datos inválidos para ${ticker}.`);
-                            resolve(adaptApiData(priceData, overviewData, ticker));
-                        } catch (err) {
-                            console.error(`Error al obtener datos para ${ticker}:`, err);
-                            error.value = err.message || `No se pudieron obtener los datos para ${ticker}.`;
-                            resolve(null);
-                        }
-                    });
-                }
-                function adaptApiData(priceData, overviewData, ticker) {
-                    const timeSeries = priceData['Monthly Adjusted Time Series'];
-                    const dates = Object.keys(timeSeries).sort((a,b)=>new Date(a)-new Date(b)).slice(-12);
-                    const prices = dates.map(d=>parseFloat(timeSeries[d]['4. close']));
-                    const lastPrice = prices[prices.length-1];
-                    const sixMonthAgoPrice = prices.length>6?prices[prices.length-7]:prices[0];
-                    const six_month_return = ((lastPrice-sixMonthAgoPrice)/sixMonthAgoPrice)*100;
-                    let trend=(lastPrice - prices[prices.length-4])/3; let projection=[]; let projectedPrice=lastPrice;
-                    for(let i=0;i<6;i++){projectedPrice+=trend+((Math.random()-0.45)*(lastPrice*0.05));projection.push(projectedPrice);}
-                    return{ticker,name:overviewData.Name,description:overviewData.Description,financials:{'P/E':parseFloat(overviewData.PERatio),'Market Cap':(parseFloat(overviewData.MarketCapitalization)/1e9).toFixed(2)+'B USD','EPS':parseFloat(overviewData.EPS)},prices,lastPrice,six_month_return,isPositive:six_month_return>=0,projection,projected_price:projection[5]||lastPrice,projected_return:((projection[5]||lastPrice)-lastPrice)/lastPrice*100,color:`rgba(${Math.floor(Math.random()*200)},${Math.floor(Math.random()*200)},${Math.floor(Math.random()*200)},1)`};
-                }
-                async function addStock() {
-                    const tickerToAdd=newStockTicker.value.toUpperCase().trim();
-                    if(!tickerToAdd||trackedStocks.value.includes(tickerToAdd))return;
-                    isLoading.value=true;
-                    const newData=await fetchStockData(tickerToAdd);
-                    isLoading.value=false;
-                    if(newData){stockData[tickerToAdd]=newData;trackedStocks.value.push(tickerToAdd);selectedStocksInChart.value.push(tickerToAdd);newStockTicker.value='';saveStocksToStorage();}
-                }
-                function removeStock(tickerToRemove) {
-                    trackedStocks.value=trackedStocks.value.filter(t=>t!==tickerToRemove);
-                    selectedStocksInChart.value=selectedStocksInChart.value.filter(t=>t!==tickerToRemove);
-                    if(activeDetailStock.value===tickerToRemove)activeDetailStock.value=null;
-                    delete stockData[tickerToRemove];saveStocksToStorage();
-                }
-                async function onMounted() {
-                    const initialStocks = loadStocksFromStorage();
-                    const results = await Promise.all(initialStocks.map(ticker => fetchStockData(ticker)));
-                    results.forEach((data,index)=>{if(data){const ticker=initialStocks[index];stockData[ticker]=data;trackedStocks.value.push(ticker);selectedStocksInChart.value.push(ticker);}});
-                    isLoadingInitial.value=false;
-                    setTimeout(()=>{if(trackedStocks.value.length>0){initializeChart();updateChart();}},0);
-                }
             }
         }).mount('#app');
     </script>
