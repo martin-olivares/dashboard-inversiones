@@ -15,8 +15,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* * Definición de la paleta de colores y variables globales
+         * para un mantenimiento sencillo del tema oscuro.
+        */
         :root {
-            --background: #0d1117; /* GitHub Dark Dimmed */
+            --background: #0d1117;
             --surface-1: #161b22;
             --surface-2: #21262d;
             --border-color: #30363d;
@@ -24,21 +27,34 @@
             --text-secondary: #7d8590;
             --accent: #58a6ff;
         }
+
+        /* Estilos base del cuerpo del documento */
         body { 
             font-family: 'Be Vietnam Pro', sans-serif; 
             background-color: var(--background); 
             color: var(--text-primary);
         }
-        [v-cloak] { display: none; }
-        .chart-container { position: relative; height: 400px; }
 
-        /* Efecto de borde gradiente */
-        .gradient-border {
-            border: 1px solid transparent;
-            background: linear-gradient(var(--surface-1), var(--surface-1)) padding-box, linear-gradient(to right, #30363d, #505a66) border-box;
+        /* Oculta el contenido de Vue hasta que esté completamente cargado para evitar parpadeos */
+        [v-cloak] { 
+            display: none; 
         }
 
-        /* Estilo para el loader */
+        /* Contenedor del gráfico */
+        .chart-container { 
+            position: relative; 
+            height: 400px; 
+        }
+
+        /* Clase para aplicar un borde con gradiente a los widgets */
+        .gradient-border {
+            border: 1px solid transparent;
+            background: 
+                linear-gradient(var(--surface-1), var(--surface-1)) padding-box, 
+                linear-gradient(to right, #30363d, #505a66) border-box;
+        }
+
+        /* Animación del ícono de carga */
         .loader {
             width: 48px;
             height: 48px;
@@ -56,14 +72,18 @@
     </style>
 </head>
 <body class="antialiased">
+
     <div id="app" v-cloak class="max-w-screen-xl mx-auto p-4 sm:p-6 lg:p-8">
+        
         <header class="mb-8">
             <h1 class="text-3xl font-bold tracking-tight text-white">Dashboard Financiero</h1>
             <p class="text-text-secondary">Análisis de activos con IA integrada</p>
         </header>
 
         <main class="space-y-6">
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
                 <div class="md:col-span-1 p-5 bg-surface-1 rounded-lg gradient-border">
                     <h2 class="font-semibold mb-3 text-white">Control de Activos</h2>
                     <div class="space-y-3">
@@ -75,15 +95,18 @@
                          <p v-if="error" class="text-red-400 text-xs text-center pt-1">{{ error }}</p>
                     </div>
                 </div>
+
                 <div v-if="!isLoadingInitial && trackedStocks.length > 0" class="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <kpi-card v-for="ticker in trackedStocks.slice(0, 4)" :key="ticker" :stock="stockData[ticker]" :is-active="activeDetailStock === ticker" @select="setActiveDetail" @remove="removeStock"></kpi-card>
                 </div>
+
                 <div v-if="isLoadingInitial" class="md:col-span-2 flex items-center justify-center bg-surface-1 rounded-lg gradient-border">
                     <div class="loader"></div>
                 </div>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
                 <div class="lg:col-span-2 p-5 bg-surface-1 rounded-lg gradient-border">
                      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                         <h3 class="font-semibold text-white">Rendimiento Histórico y Proyectado</h3>
@@ -112,6 +135,13 @@
     <script>
         const { createApp, ref, reactive, onMounted, watch } = Vue;
 
+        // --- COMPONENTES DE VUE ---
+
+        /**
+         * Componente KpiCard: Muestra un resumen de alto nivel para una acción.
+         * @props {Object} stock - Los datos de la acción.
+         * @props {Boolean} isActive - Si la tarjeta está actualmente seleccionada.
+         */
         const kpiCard = {
             props: ['stock', 'isActive'],
             template: `
@@ -125,17 +155,29 @@
                 </div>`
         };
 
+        /**
+         * Componente DetailView: Muestra información detallada y el análisis de Gemini.
+         * @props {Object} stock - Los datos de la acción seleccionada.
+         * @emits analyze - Evento para solicitar un análisis de IA al componente padre.
+         */
         const detailView = {
             props: ['stock'],
             emits: ['analyze'],
-            data() { return { isAnalyzing: false, analysis: null, error: null } },
+            data() {
+                return { isAnalyzing: false, analysis: null, error: null }
+            },
             methods: {
                 async performAnalysis() {
-                    this.isAnalyzing = true; this.error = null; this.analysis = null;
+                    this.isAnalyzing = true;
+                    this.error = null;
+                    this.analysis = null;
                     const result = await this.$emit('analyze', this.stock.ticker, this.stock.name);
                     if (result) {
+                        // Usa la librería 'marked' para convertir la respuesta Markdown de Gemini a HTML.
                         this.analysis = marked.parse(result.replace(/#/g, ' '));
-                    } else { this.error = "No se pudo obtener el análisis."; }
+                    } else {
+                        this.error = "No se pudo obtener el análisis.";
+                    }
                     this.isAnalyzing = false;
                 }
             },
@@ -145,12 +187,10 @@
                         <h3 class="font-bold text-lg text-white">{{ stock.name }}</h3>
                         <p class="text-sm text-text-secondary">{{ stock.financials['Market Cap'] }}</p>
                     </div>
-                    
                     <button @click="performAnalysis" :disabled="isAnalyzing" class="w-full bg-accent text-white font-bold px-4 py-2 rounded-md transition hover:opacity-90 disabled:bg-gray-500 text-sm mb-3">
                         <span v-if="!isAnalyzing">Análisis con IA</span>
                         <span v-if="isAnalyzing">Generando...</span>
                     </button>
-
                     <div class="flex-grow space-y-2 overflow-y-auto" style="max-height: 280px;">
                         <div v-if="isAnalyzing" class="text-center p-4"><div class="loader inline-block"></div></div>
                         <div v-if="analysis" class="prose prose-sm prose-invert text-text-secondary" v-html="analysis"></div>
@@ -161,44 +201,142 @@
                 </div>`
         };
 
+        // --- APLICACIÓN PRINCIPAL DE VUE ---
         createApp({
             components: { kpiCard, detailView },
             setup() {
-                const stockData = reactive({});
-                const trackedStocks = ref([]);
-                const selectedStocksInChart = ref([]);
-                const activeDetailStock = ref(null);
-                const newStockTicker = ref('');
-                const isLoading = ref(false);
-                const isLoadingInitial = ref(true);
-                const error = ref(null);
-                let chartInstance = null;
+                // --- ESTADO REACTIVO DE LA APLICACIÓN ---
+                const stockData = reactive({});                // Almacena los datos detallados de cada acción.
+                const trackedStocks = ref([]);                 // Lista de tickers de acciones seguidas.
+                const selectedStocksInChart = ref([]);         // Lista de tickers a mostrar en el gráfico.
+                const activeDetailStock = ref(null);           // Ticker de la acción actualmente seleccionada.
+                const newStockTicker = ref('');                // Valor del input para añadir nuevas acciones.
+                const isLoading = ref(false);                  // Estado de carga para el botón de añadir.
+                const isLoadingInitial = ref(true);            // Estado de carga inicial de la página.
+                const error = ref(null);                       // Mensaje de error global.
+                let chartInstance = null;                      // Instancia del objeto Chart.js.
                 
-                // Pega aquí la URL de tu función de Netlify
+                // --- CONFIGURACIÓN ---
+                // URL de la función serverless de Netlify que actúa como backend.
                 const API_ENDPOINT = 'https://cerulean-cupcake-1f5893.netlify.app/.netlify/functions/fetch-stock';
 
-                // --- La lógica de Vue (acortada por brevedad, es la misma) ---
-                const loadStocksFromStorage=()=>localStorage.getItem('trackedStocks')?JSON.parse(localStorage.getItem('trackedStocks')):['TSLA','AMZN','MELI','GOOGL'];
-                const saveStocksToStorage=()=>localStorage.setItem('trackedStocks',JSON.stringify(trackedStocks.value));
-                const analyzeWithGemini=async(ticker,stockName)=>{try{const r=await fetch(`${API_ENDPOINT}?ticker=${ticker}&action=analyze&stockName=${encodeURIComponent(stockName)}`);if(!r.ok)throw new Error('Network error');const d=await r.json();return d.analysis}catch(e){console.error("Error:",e);return null}};
-                const fetchStockData=async(ticker)=>{error.value=null;if(!API_ENDPOINT||API_ENDPOINT.includes('tu-sitio')){error.value="Configura API URL.";return null}try{const r=await fetch(`${API_ENDPOINT}?ticker=${ticker}`);if(!r.ok)throw new Error('Network error');const{priceData:p,overviewData:o}=await r.json();if(p.Note||o.Note)throw new Error('API limit reached');if(p['Error Message']||!o.Symbol)throw new Error(`Invalid data for ${ticker}`);return adaptApiData(p,o,ticker)}catch(e){console.error(`Error for ${ticker}:`,e);error.value=e.message||`Could not fetch data for ${ticker}`;return null}};
-                const adaptApiData=(p,o,t)=>{const s=p['Monthly Adjusted Time Series'],d=Object.keys(s).sort((a,b)=>new Date(a)-new Date(b)).slice(-12),pr=d.map(dt=>parseFloat(s[dt]['4. close'])),lp=pr[pr.length-1],sap=pr.length>6?pr[pr.length-7]:pr[0],sr=((lp-sap)/sap)*100;let tr=(lp-pr[pr.length-4])/3,pj=[],pp=lp;for(let i=0;i<6;i++){pp+=tr+((Math.random()-.45)*(lp*.05));pj.push(pp)}return{ticker:t,name:o.Name,description:o.Description,financials:{'P/E':parseFloat(o.PERatio),'Market Cap':(parseFloat(o.MarketCapitalization)/1e9).toFixed(2)+'B USD','EPS':parseFloat(o.EPS)},prices:pr,lastPrice:lp,six_month_return:sr,isPositive:sr>=0,projection:pj,projected_price:pj[5]||lp,projected_return:((pj[5]||lp)-lp)/lp*100,color:`rgba(${Math.floor(Math.random()*155)+100},${Math.floor(Math.random()*155)+100},${Math.floor(Math.random()*155)+100},1)`}};
-                const addStock=async()=>{const t=newStockTicker.value.toUpperCase().trim();if(!t||trackedStocks.value.includes(t))return;isLoading.value=!0;const n=await fetchStockData(t);isLoading.value=!1;if(n){stockData[t]=n;trackedStocks.value.push(t);selectedStocksInChart.value.push(t);newStockTicker.value='';saveStocksToStorage()}};
-                const removeStock=t=>{trackedStocks.value=trackedStocks.value.filter(i=>i!==t);selectedStocksInChart.value=selectedStocksInChart.value.filter(i=>i!==t);if(activeDetailStock.value===t)activeDetailStock.value=null;delete stockData[t];saveStocksToStorage()};
+                // --- MÉTODOS ---
+
+                /** Carga la lista de acciones desde el almacenamiento local del navegador. */
+                const loadStocksFromStorage = () => {
+                    const stored = localStorage.getItem('trackedStocks');
+                    return stored ? JSON.parse(stored) : ['TSLA', 'AMZN', 'MELI', 'GOOGL'];
+                };
+
+                /** Guarda la lista actual de acciones en el almacenamiento local. */
+                const saveStocksToStorage = () => {
+                    localStorage.setItem('trackedStocks', JSON.stringify(trackedStocks.value));
+                };
                 
+                /** Llama a la función serverless para obtener el análisis de Gemini. */
+                const analyzeWithGemini = async (ticker, stockName) => {
+                    try {
+                        const response = await fetch(`${API_ENDPOINT}?ticker=${ticker}&action=analyze&stockName=${encodeURIComponent(stockName)}`);
+                        if (!response.ok) throw new Error('Network error');
+                        const data = await response.json();
+                        return data.analysis;
+                    } catch (e) {
+                        console.error("Error:", e);
+                        return null;
+                    }
+                };
+                
+                /** Llama a la función serverless para obtener los datos financieros de una acción. */
+                const fetchStockData = async (ticker) => {
+                    error.value = null;
+                    if (!API_ENDPOINT || API_ENDPOINT.includes('tu-sitio')) {
+                        error.value = "Configura la URL de la API.";
+                        return null;
+                    }
+                    try {
+                        const response = await fetch(`${API_ENDPOINT}?ticker=${ticker}`);
+                        if (!response.ok) throw new Error('Error de red al obtener datos.');
+                        const { priceData, overviewData } = await response.json();
+                        if (priceData.Note || overviewData.Note) throw new Error('Límite de la API alcanzado. Intenta más tarde.');
+                        if (priceData['Error Message'] || !overviewData.Symbol) throw new Error(`Datos inválidos para ${ticker}.`);
+                        return adaptApiData(priceData, overviewData, ticker);
+                    } catch (e) {
+                        console.error(`Error para ${ticker}:`, e);
+                        error.value = e.message || `No se pudieron obtener datos para ${ticker}.`;
+                        return null;
+                    }
+                };
+
+                /** Adapta la respuesta cruda de la API a un formato de objeto más limpio y útil. */
+                const adaptApiData = (priceData, overviewData, ticker) => {
+                    const timeSeries = priceData['Monthly Adjusted Time Series'];
+                    const dates = Object.keys(timeSeries).sort((a, b) => new Date(a) - new Date(b)).slice(-12);
+                    const prices = dates.map(date => parseFloat(timeSeries[date]['4. close']));
+                    const lastPrice = prices[prices.length - 1];
+                    const sixMonthAgoPrice = prices.length > 6 ? prices[prices.length - 7] : prices[0];
+                    const six_month_return = ((lastPrice - sixMonthAgoPrice) / sixMonthAgoPrice) * 100;
+                    
+                    let trend = (lastPrice - prices[prices.length - 4]) / 3;
+                    let projection = [];
+                    let projectedPrice = lastPrice;
+                    for (let i = 0; i < 6; i++) {
+                        projectedPrice += trend + ((Math.random() - 0.45) * (lastPrice * 0.05));
+                        projection.push(projectedPrice);
+                    }
+                    
+                    return {
+                        ticker,
+                        name: overviewData.Name,
+                        description: overviewData.Description,
+                        financials: {
+                            'P/E': parseFloat(overviewData.PERatio),
+                            'Market Cap': (parseFloat(overviewData.MarketCapitalization) / 1e9).toFixed(2) + 'B USD',
+                            'EPS': parseFloat(overviewData.EPS),
+                        },
+                        prices, lastPrice, six_month_return,
+                        isPositive: six_month_return >= 0,
+                        projection,
+                        projected_price: projection[5] || lastPrice,
+                        projected_return: ((projection[5] || lastPrice) - lastPrice) / lastPrice * 100,
+                        color: `rgba(${Math.floor(Math.random()*155)+100},${Math.floor(Math.random()*155)+100},${Math.floor(Math.random()*155)+100},1)`
+                    };
+                };
+
+                /** Añade una nueva acción a la lista de seguimiento. */
+                const addStock = async () => {
+                    const tickerToAdd = newStockTicker.value.toUpperCase().trim();
+                    if (!tickerToAdd || trackedStocks.value.includes(tickerToAdd)) return;
+                    
+                    isLoading.value = true;
+                    const newData = await fetchStockData(tickerToAdd);
+                    isLoading.value = false;
+
+                    if (newData) {
+                        stockData[tickerToAdd] = newData;
+                        trackedStocks.value.push(tickerToAdd);
+                        selectedStocksInChart.value.push(tickerToAdd);
+                        newStockTicker.value = '';
+                        saveStocksToStorage();
+                    }
+                };
+
+                /** Elimina una acción de la lista de seguimiento. */
+                const removeStock = (ticker) => {
+                    trackedStocks.value = trackedStocks.value.filter(t => t !== ticker);
+                    selectedStocksInChart.value = selectedStocksInChart.value.filter(t => t !== ticker);
+                    if (activeDetailStock.value === ticker) activeDetailStock.value = null;
+                    delete stockData[ticker];
+                    saveStocksToStorage();
+                };
+                
+                /** Inicializa la instancia de Chart.js con estilos para el tema oscuro. */
                 const initializeChart = () => {
                     const ctx = document.getElementById('priceChart').getContext('2d');
-                    const createGlowGradient = (color) => {
-                        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                        gradient.addColorStop(0, color.replace('1)', '0.5)'));
-                        gradient.addColorStop(0.5, color.replace('1)', '0.05)'));
-                        gradient.addColorStop(1, color.replace('1)', '0)'));
-                        return gradient;
-                    };
                     chartInstance = new Chart(ctx, {
                         type: 'line',
                         options: { 
-                            responsive: true, maintainAspectRatio: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             plugins: { legend: { display: false } },
                             scales: { 
                                 x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: var(--text-secondary) } }, 
@@ -208,17 +346,20 @@
                     });
                 };
                 
+                /** Actualiza los datos del gráfico con las acciones seleccionadas. */
                 const updateChart = () => {
                     if (!chartInstance) return;
                     const labels = Array.from({length: 18}, (_, i) => i < 12 ? `M${i-11}`: `P${i-11}`);
                     chartInstance.data.labels = labels;
                     chartInstance.data.datasets = [];
+                    
                     const createGlowGradient = (color) => {
                         const gradient = chartInstance.ctx.createLinearGradient(0, 0, 0, 400);
                         gradient.addColorStop(0, color.replace('1)', '0.6)'));
                         gradient.addColorStop(0.8, color.replace('1)', '0)'));
                         return gradient;
                     };
+
                     selectedStocksInChart.value.forEach(ticker => {
                         const stock = stockData[ticker];
                         if (!stock) return;
@@ -237,23 +378,44 @@
                     chartInstance.update();
                 };
 
+                /** Hook del ciclo de vida de Vue: se ejecuta cuando el componente se monta. */
                 onMounted(async () => {
                     const initialStocks = loadStocksFromStorage();
                     const results = await Promise.all(initialStocks.map(ticker => fetchStockData(ticker)));
-                    results.forEach((data,index)=>{if(data){const ticker=initialStocks[index];stockData[ticker]=data;trackedStocks.value.push(ticker);selectedStocksInChart.value.push(ticker);}});
-                    isLoadingInitial.value=false;
-                    setTimeout(()=>{if(trackedStocks.value.length>0){initializeChart();updateChart();}},0);
+                    results.forEach((data, index) => {
+                        if (data) {
+                            const ticker = initialStocks[index];
+                            stockData[ticker] = data;
+                            trackedStocks.value.push(ticker);
+                            selectedStocksInChart.value.push(ticker);
+                        }
+                    });
+                    isLoadingInitial.value = false;
+                    
+                    // Espera un ciclo para asegurar que el DOM esté listo.
+                    setTimeout(() => {
+                        if (trackedStocks.value.length > 0) {
+                            initializeChart();
+                            updateChart();
+                        }
+                    }, 0);
                 });
+                
+                /** Observador: se ejecuta cada vez que las acciones seleccionadas o seguidas cambian. */
                 watch([selectedStocksInChart, trackedStocks], updateChart, { deep: true });
 
+                // Expone las variables y métodos al template HTML.
                 return {
                     stockData, trackedStocks, selectedStocksInChart, activeDetailStock, newStockTicker, isLoading, isLoadingInitial, error,
                     addStock, removeStock, analyzeWithGemini,
                     setActiveDetail: (ticker) => activeDetailStock.value = ticker,
                     toggleStockInChart: (ticker) => {
                         const index = selectedStocksInChart.value.indexOf(ticker);
-                        if (index > -1) selectedStocksInChart.value.splice(index, 1);
-                        else selectedStocksInChart.value.push(ticker);
+                        if (index > -1) {
+                            selectedStocksInChart.value.splice(index, 1);
+                        } else {
+                            selectedStocksInChart.value.push(ticker);
+                        }
                     }
                 };
             }
