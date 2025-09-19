@@ -1,0 +1,31 @@
+﻿// Este es el código de tu función en Netlify
+const fetch = require('node-fetch');
+
+exports.handler = async function (event, context) {
+  // Obtenemos el ticker de la URL (ej: /api/fetch-stock?ticker=AAPL)
+  const ticker = event.queryStringParameters.ticker;
+  const API_KEY = process.env.ALPHA_VANTAGE_KEY; // Tu clave secreta
+
+  if (!ticker) {
+    return { statusCode: 400, body: 'Ticker is required' };
+  }
+
+  const urlPrice = `https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=${ticker}&apikey=${API_KEY}`;
+  const urlOverview = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${API_KEY}`;
+
+  try {
+    const [priceResponse, overviewResponse] = await Promise.all([fetch(urlPrice), fetch(urlOverview)]);
+    const priceData = await priceResponse.json();
+    const overviewData = await overviewResponse.json();
+
+    // Combinamos ambas respuestas en un solo objeto
+    const responseData = { priceData, overviewData };
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(responseData),
+    };
+  } catch (error) {
+    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to fetch data' }) };
+  }
+};
