@@ -54,6 +54,7 @@
 <body class="antialiased">
 
     <div id="app" v-cloak class="max-w-screen-xl mx-auto p-4 sm:p-6 lg:p-8">
+        
         <header class="mb-8">
             <h1 class="text-3xl font-bold tracking-tight text-white">Dashboard Financiero</h1>
             <p class="text-text-secondary">Análisis de activos con IA integrada</p>
@@ -61,11 +62,11 @@
 
         <main class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Columna de control -->
                 <div class="md:col-span-1 p-5 bg-surface-1 rounded-lg gradient-border">
                     <h2 class="font-semibold mb-3 text-white">Control de Activos</h2>
                     <div class="space-y-3">
-                        <input type="text" v-model="newStockTicker" @keyup.enter="addStock" placeholder="Añadir ticker, ej: AAPL" class="w-full px-3 py-2 bg-background border border-border-color rounded-md focus:ring-2 focus:ring-accent focus:border-accent transition placeholder:text-text-secondary">
+                        <!-- CAMBIO: Añadida la clase text-white para que el texto sea visible -->
+                        <input type="text" v-model="newStockTicker" @keyup.enter="addStock" placeholder="Añadir ticker, ej: AAPL" class="w-full px-3 py-2 bg-background border border-border-color rounded-md focus:ring-2 focus:ring-accent focus:border-accent transition placeholder:text-text-secondary text-white">
                         <button @click="addStock" :disabled="isLoading" class="w-full bg-accent text-white font-bold px-4 py-2 rounded-md transition-opacity hover:opacity-90 disabled:bg-gray-500 disabled:cursor-not-allowed">
                             <span v-if="!isLoading">Agregar</span>
                             <span v-if="isLoading">Cargando...</span>
@@ -73,7 +74,6 @@
                          <p v-if="error" class="text-red-400 text-xs text-center pt-1">{{ error }}</p>
                     </div>
                 </div>
-                <!-- KPIs principales -->
                 <div v-if="!isLoadingInitial && trackedStocks.length > 0" class="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <kpi-card v-for="ticker in trackedStocks.slice(0, 4)" :key="ticker" :stock="stockData[ticker]" :is-active="activeDetailStock === ticker" @select="setActiveDetail" @remove="removeStock"></kpi-card>
                 </div>
@@ -83,7 +83,6 @@
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Gráfico -->
                 <div class="lg:col-span-2 p-5 bg-surface-1 rounded-lg gradient-border">
                      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                         <h3 class="font-semibold text-white">Rendimiento Histórico y Proyectado</h3>
@@ -100,8 +99,6 @@
                         <canvas id="priceChart"></canvas>
                     </div>
                 </div>
-
-                <!-- Detalles y Análisis IA -->
                 <div class="p-5 bg-surface-1 rounded-lg gradient-border">
                     <detail-view v-if="activeDetailStock" :stock="stockData[activeDetailStock]" @analyze="analyzeWithGemini"></detail-view>
                     <div v-else class="flex flex-col items-center justify-center h-full text-center">
